@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTextEdit, QFileDialog, QMessageBox, QColorDialog,
     QFontDialog, QToolBar, QStatusBar, QTabWidget, QWidget, QLineEdit, QPushButton, QLabel, QGridLayout
 )
-from PyQt6.QtGui import QIcon, QFont, QTextCharFormat, QAction
-
+from PyQt6.QtGui import QIcon, QFont, QTextCharFormat, QAction, QPixmap
+from PyQt6.QtCore import Qt
 
 class TextEditor(QMainWindow):
     def __init__(self):
@@ -112,8 +112,6 @@ class TextEditor(QMainWindow):
         edit_menu.addAction(find_action)
 
         # Меню "Формат"
-        format_menu = menubar
-        # Меню "Формат"
         format_menu = menubar.addMenu('Формат')
 
         bold_action = QAction(QIcon('icons/bold.png'), 'Жирный', self, checkable=True)
@@ -193,6 +191,14 @@ class TextEditor(QMainWindow):
                     self.tabs.setCurrentIndex(index)
             except Exception as e:
                 QMessageBox.warning(self, "Ошибка", f"Не удалось открыть файл:\n{e}")
+
+    def save_file(self):
+        editor = self.current_editor()
+        if editor:
+            current_index = self.tabs.currentIndex()
+            filename = self.tabs.tabText(current_index)
+            if filename == "Новый документ":
+                self.save
 
     def save_file(self):
         editor = self.current_editor()
@@ -336,8 +342,28 @@ class TextEditor(QMainWindow):
         self.status.showMessage("Изменения внесены", 2000)
 
     def about(self):
-        QMessageBox.information(self, "О проекте", "Текстовый редактор\nВерсия 1.0\nРазработано командой XYZ",
-                                QMessageBox.StandardButton.Ok)
+        # Создание окна "О проекте"
+        about_window = QWidget()
+        about_window.setWindowTitle("О проекте")
+
+        # Вставка изображения с помощью QPixmap
+        pixmap = QPixmap('icons/imageprogect.png')
+        image_label = QLabel()
+        image_label.setPixmap(pixmap)
+        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Текст о проекте
+        text_label = QLabel("Текстовый редактор\nВерсия 1.0\nРазработано командой XYZ")
+        text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Создаем компоновку для окна
+        layout = QGridLayout()
+        layout.addWidget(image_label, 0, 0)
+        layout.addWidget(text_label, 1, 0)
+
+        about_window.setLayout(layout)
+        about_window.resize(400, 300)
+        about_window.show()
 
 
 def main():
