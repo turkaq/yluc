@@ -20,7 +20,7 @@ class TextEditor(QMainWindow):
 
     def init_ui(self):
         # Настройка основного окна
-        self.setWindowTitle('t')
+        self.setWindowTitle('Text Editor')
         self.setGeometry(100, 100, 1000, 800)
 
         # Создание меню
@@ -112,7 +112,10 @@ class TextEditor(QMainWindow):
         edit_menu.addAction(find_action)
 
         # Меню "Формат"
+        format_menu = menubar
+        # Меню "Формат"
         format_menu = menubar.addMenu('Формат')
+
         bold_action = QAction(QIcon('icons/bold.png'), 'Жирный', self, checkable=True)
         bold_action.setShortcut('Ctrl+B')
         bold_action.triggered.connect(self.toggle_bold)
@@ -141,6 +144,13 @@ class TextEditor(QMainWindow):
         format_menu.addAction(text_color_action)
         format_menu.addAction(bg_color_action)
         format_menu.addAction(font_action)
+
+        # Меню "Справка"
+        help_menu = menubar.addMenu('Справка')
+
+        about_action = QAction('О проекте', self)
+        about_action.triggered.connect(self.about)
+        help_menu.addAction(about_action)
 
     def create_toolbar(self):
         # Создаем панель инструментов с основными кнопками
@@ -222,26 +232,24 @@ class TextEditor(QMainWindow):
         editor = self.current_editor()
         if editor:
             cursor = editor.textCursor()
-            if cursor.hasSelection():
-                fmt = QTextCharFormat()
-                fmt.setFontWeight(
-                    QFont.Weight.Bold if cursor.charFormat().fontWeight() != QFont.Weight.Bold else QFont.Weight.Normal)
-                cursor.mergeCharFormat(fmt)
+            fmt = cursor.charFormat()
+            fmt.setFontWeight(QFont.Weight.Bold if not fmt.fontWeight() == QFont.Weight.Bold else QFont.Weight.Normal)
+            cursor.mergeCharFormat(fmt)
 
     def toggle_italic(self):
         editor = self.current_editor()
         if editor:
             cursor = editor.textCursor()
-            fmt = QTextCharFormat()
-            fmt.setFontItalic(not cursor.charFormat().fontItalic())
+            fmt = cursor.charFormat()
+            fmt.setFontItalic(not fmt.fontItalic())
             cursor.mergeCharFormat(fmt)
 
     def toggle_underline(self):
         editor = self.current_editor()
         if editor:
             cursor = editor.textCursor()
-            fmt = QTextCharFormat()
-            fmt.setFontUnderline(not cursor.charFormat().fontUnderline())
+            fmt = cursor.charFormat()
+            fmt.setFontUnderline(not fmt.fontUnderline())
             cursor.mergeCharFormat(fmt)
 
     def change_text_color(self):
@@ -266,8 +274,8 @@ class TextEditor(QMainWindow):
             self.current_editor().textCursor().mergeCharFormat(fmt)
 
     def find_and_replace(self):
-        find_replace_dialog = QWidget()
-        find_replace_dialog.setWindowTitle("Найти и заменить")
+        self.find_replace_dialog = QWidget()  # сохраняем в качестве атрибута
+        self.find_replace_dialog.setWindowTitle("Найти и заменить")
         layout = QGridLayout()
 
         find_label = QLabel("Найти:")
@@ -287,8 +295,8 @@ class TextEditor(QMainWindow):
         layout.addWidget(find_button, 2, 0)
         layout.addWidget(replace_button, 2, 1)
 
-        find_replace_dialog.setLayout(layout)
-        find_replace_dialog.show()
+        self.find_replace_dialog.setLayout(layout)  # Используем атрибут для хранения диалога
+        self.find_replace_dialog.show()
 
     def find_text(self):
         editor = self.current_editor()
@@ -317,10 +325,19 @@ class TextEditor(QMainWindow):
             self.tabs.removeTab(index)
 
     def current_editor(self):
-        return self.tabs.currentWidget()
+        editor = self.tabs.currentWidget()
+        if isinstance(editor, QTextEdit):  # Проверяем, что текущий виджет - это QTextEdit
+            return editor
+        else:
+            QMessageBox.warning(self, "Ошибка", "Нет открытого документа для работы")
+            return None
 
     def update_status(self):
         self.status.showMessage("Изменения внесены", 2000)
+
+    def about(self):
+        QMessageBox.information(self, "О проекте", "Текстовый редактор\nВерсия 1.0\nРазработано командой XYZ",
+                                QMessageBox.StandardButton.Ok)
 
 
 def main():
