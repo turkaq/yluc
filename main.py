@@ -151,22 +151,26 @@ class TextEditor(QMainWindow):
         help_menu.addAction(about_action)
 
     def create_toolbar(self):
-        # Создаем панель инструментов с основными кнопками
         toolbar = QToolBar("Инструменты")
         toolbar.setMovable(False)
         self.addToolBar(toolbar)
 
-        # Кнопки на панели инструментов
         toolbar.addAction(QIcon('icons/new.png'), "Новый", self.new_file)
         toolbar.addAction(QIcon('icons/open.png'), "Открыть", self.open_file)
         toolbar.addAction(QIcon('icons/save.png'), "Сохранить", self.save_file)
         toolbar.addSeparator()
-        toolbar.addAction(QIcon('icons/undo.png'), "Отменить", lambda: self.current_editor().undo())
-        toolbar.addAction(QIcon('icons/redo.png'), "Повторить", lambda: self.current_editor().redo())
+
+        toolbar.addAction(QIcon('icons/undo.png'), "Отменить",
+                          lambda: self.current_editor().undo() if self.current_editor() else None)
+        toolbar.addAction(QIcon('icons/redo.png'), "Повторить",
+                          lambda: self.current_editor().redo() if self.current_editor() else None)
         toolbar.addSeparator()
-        toolbar.addAction(QIcon('icons/cut.png'), "Вырезать", lambda: self.current_editor().cut())
-        toolbar.addAction(QIcon('icons/copy.png'), "Копировать", lambda: self.current_editor().copy())
-        toolbar.addAction(QIcon('icons/paste.png'), "Вставить", lambda: self.current_editor().paste())
+        toolbar.addAction(QIcon('icons/cut.png'), "Вырезать",
+                          lambda: self.current_editor().cut() if self.current_editor() else None)
+        toolbar.addAction(QIcon('icons/copy.png'), "Копировать",
+                          lambda: self.current_editor().copy() if self.current_editor() else None)
+        toolbar.addAction(QIcon('icons/paste.png'), "Вставить",
+                          lambda: self.current_editor().paste() if self.current_editor() else None)
 
     def create_status_bar(self):
         # Создаем строку состояния
@@ -332,10 +336,13 @@ class TextEditor(QMainWindow):
 
     def current_editor(self):
         editor = self.tabs.currentWidget()
-        if isinstance(editor, QTextEdit):  # Проверяем, что текущий виджет - это QTextEdit
+        if editor is None:
+            QMessageBox.warning(self, "Ошибка", "Нет открытого документа для работы")
+            return None
+        elif isinstance(editor, QTextEdit):  # Проверяем, что текущий виджет - это QTextEdit
             return editor
         else:
-            QMessageBox.warning(self, "Ошибка", "Нет открытого документа для работы")
+            QMessageBox.warning(self, "Ошибка", "Неизвестный тип виджета")
             return None
 
     def update_status(self):
